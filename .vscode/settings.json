@@ -1,0 +1,35 @@
+{
+    "cSpell.words": ["Cacheable", "Flyway", "Ingestor", "jdbc", "quarkus"],
+    "editor.formatOnSave": true,
+    "editor.codeActionsOnSave": {
+      "source.fixAll.eslint": "explicit"
+    },
+    "editor.detectIndentation": false,
+    "editor.insertSpaces": true,
+    "editor.tabSize": 2,
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "editor.bracketPairColorization.enabled": true,
+    "editor.guides.bracketPairs": "active",
+    "eslint.workingDirectories": ["./app/src/main/webui"],
+    "[java]": {
+      "editor.defaultFormatter": "redhat.java"
+    },
+    "java.configuration.updateBuildConfiguration": "automatic",
+    "java.format.settings.url": "./build-tools/src/main/resources/product/eclipse-java-google-style.xml",
+    "java.format.settings.profile": "GoogleStyle",
+    "java.compile.nullAnalysis.mode": "automatic",
+    "javaPMD.rulesets": [
+      "./build-tools/src/main/resources/product/pmd-ruleset.xml"
+    ],
+    "telemetry.enableTelemetry": false,
+    "telemetry.telemetryLevel": "off",
+    "java.format.enabled": true,
+    "editor.formatOnPaste": true,
+    "java.checkstyle.configuration": "${workspaceFolder}/build-tools/src/main/resources/product/checkstyle.xml",
+    "java.checkstyle.version": "10.19.0",
+    "java.jdt.ls.vmargs": "-XX:+UseParallelGC -XX:GCTimeRatio=4 -XX:AdaptiveSizePolicyWeight=90 -Dsun.zip.disableMemoryMapping=true -Xmx2G -Xms100m -Xlog:disable",
+    "[xml]": {
+      "editor.defaultFormatter": "redhat.vscode-xml"
+    }
+  }
+  
