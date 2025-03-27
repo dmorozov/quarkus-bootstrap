@@ -1,0 +1,65 @@
+// For format details, see https://aka.ms/devcontainer.json. For config options, see the
+// README at: https://github.com/devcontainers/templates/tree/main/src/java
+{
+    "name": "QuarkusBootstrap",
+    "dockerComposeFile": "docker-compose.yml",
+    "service": "quarkus-bootstrap-app",
+    "shutdownAction": "stopCompose",
+    // Explicitly declaring which source-code folder to mount and where to mount it in the container
+    "workspaceFolder": "/workspaces",
+    "features": {
+      // Ensures that Quarkus is installed in the container
+      "ghcr.io/devcontainers-contrib/features/quarkus-sdkman:2": {
+        "version": "3.6.7",
+        "jdkVersion": "21"
+      },
+      // Installs a set of common command line utilities, Oh My Zsh!, and sets up a non-root user.
+      "ghcr.io/devcontainers/features/common-utils:2.0.11": {
+        "installZsh": true,
+        "configureZshAsDefaultShell": true,
+        "installOhMyZsh": true,
+        "installOhMyZshConfig": true,
+        "upgradePackages": true,
+        "username": "vscode"
+      }
+    },
+    "customizations": {
+      "vscode": {
+        // Set *default* container specific settings.json values on container create.
+        "settings": {},
+        "extensions": [
+          // Backend development
+          "vscjava.vscode-java-pack",
+          "redhat.vscode-quarkus",
+          "redhat.fabric8-analytics",
+          // Git extensions
+          "github.vscode-pull-request-github", // GitHub integration
+          "donjayamanne.githistory", // Git History
+          "mhutchie.git-graph", // Git History Graph
+          "redhat.vscode-xml", // XML document formatter
+          "redhat.vscode-microprofile" // YAML editor
+        ]
+      }
+    },
+    "postStartCommand": "bash .devcontainer/postCreateCommand.sh", // && ./mvnw compile quarkus:dev -pl app
+    // Use 'forwardPorts' to make a list of ports inside the container available locally.
+    // This can be used to network with other containers or with the host.
+    "portsAttributes": {
+      "5432": {
+        "label": "Postgres SQL Server"
+      },
+      "8080": {
+        "label": "Quarkus app"
+      }
+    },
+    // Use 'forwardPorts' to make a list of ports inside the container available locally.
+    "forwardPorts": [
+      5432,
+      8080
+    ],
+    "mounts": [
+      "source=/var/run/docker.sock,target=/var/run/docker.sock,type=bind" // Binding the host docker socket to the containerit
+    ],
+    // Comment out to connect as root instead. More info: https://aka.ms/vscode-remote/containers/non-root.
+    "remoteUser": "vscode"
+  }

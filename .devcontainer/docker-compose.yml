@@ -1,0 +1,64 @@
+version: "3.8"
+
+volumes:
+  postgres-data:
+  valkey_data:
+    driver: local
+
+networks:
+  default:
+    name: quarkus-bootstrap-network
+    driver: bridge
+
+services:
+  quarkus-bootstrap-app:
+    container_name: quarkus-bootstrap-app
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        INSTALL_MAVEN: "true"
+        MAVEN_VERSION: "3.9.6"
+        NODE_VERSION: "20.17.0"
+    environment:
+      # NOTE: POSTGRES_DB/USER/PASSWORD should match values in db container
+      POSTGRES_PASSWORD: test_pwd
+      POSTGRES_USER: test_user
+      POSTGRES_DB: QuarkusBootstrapDB
+      POSTGRES_HOST: quarkus-bootstrap-db
+      POSTGRES_PORT: 5432
+
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+    volumes:
+      - ..:/workspaces:cached
+      - ~/.ssh:/home/vscode/.ssh
+      - ~/.m2:/home/vscode/.m2
+
+    # Overrides default command so things don't shut down after the process ends.
+    command: sleep infinity
+
+    # Uncomment the next line to use a non-root user for all processes.
+    # user: vscode
+
+    # Use "forwardPorts" in **devcontainer.json** to forward an app port locally.
+    # (Adding the "ports" property to this file will not forward from a Codespace.)
+
+  quarkus-bootstrap-db:
+    container_name: quarkus-bootstrap-db
+    image: postgres:17
+    restart: unless-stopped
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    environment:
+      # NOTE: POSTGRES_DB/USER/PASSWORD should match values in app container
+      POSTGRES_PASSWORD: test_pwd
+      POSTGRES_USER: test_user
+      POSTGRES_DB: QuarkusBootstrapDB
+      PGDATA: /var/lib/postgresql/data
+
+    # Add "forwardPorts": ["5432"] to **devcontainer.json** to forward PostgreSQL locally.
+    # (Adding the "ports" property to this file will not forward from a Codespace.)
