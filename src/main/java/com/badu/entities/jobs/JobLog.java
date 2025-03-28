@@ -13,21 +13,21 @@ import jakarta.persistence.Table;
 public class JobLog extends PanacheEntity {
 
   @Column(name = "JOB_ID", nullable = false)
-  private Long jobId;
+  public Long jobId;
 
   @Column(name = "ACTION_NAME", length = 256, nullable = false)
-  private String action;
+  public String action;
 
   @Column(name = "PROGRESS", nullable = false)
-  private int progress;
+  public int progress;
 
   @Column(name = "PROCESSING_DETAILS", length = 2048)
-  private String processingDetails;
+  public String processingDetails;
 
   @Column(name = "ERROR_DETAILS", length = 2048)
-  private String errorDetails;
+  public String errorDetails;
 
   @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "JOB_ID", nullable = false, insertable = false, updatable = false)
-  private JobInstance job;
+  public JobInstance job;
 }

@@ -19,9 +19,14 @@ public class FruitProcessingJob {
 
   public Uni<Void> execute(final Fruit fruit, final Long jobId) {
     return Uni.createFrom().voidItem()
-        .onItem().call(x -> {
+        .onItem().transformToUni(x -> {
 
-          return Uni.createFrom().voidItem();
+          return executeAction(jobId, "Test Action 1", 30, () -> testAction(fruit.name + "_1"))
+              .onItem().transformToUni(v1 -> executeAction(jobId, "Test Action 2", 60,
+                  () -> testAction(fruit.name + "_2")))
+              .onItem().transformToUni(v1 -> executeAction(jobId, "Test Action 3", 100,
+                  () -> testAction(fruit.name + "_3")));
+
         });
   }
 
@@ -39,4 +44,10 @@ public class FruitProcessingJob {
               });
         });
   }
+
+  private Uni<Void> testAction(final String fruitName) {
+    return fruitRepository.createFruit(fruitName)
+        .onItem().ifNotNull().transformToUni(fruit -> Uni.createFrom().voidItem());
+  }
+
 }
