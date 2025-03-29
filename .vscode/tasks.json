@@ -7,6 +7,9 @@
         "label": "Run Quarkus Bootstrap",
         "type": "shell",
         "command": "./mvnw compile quarkus:dev",
+        "windows": {
+          "command": ".\\mvnw.cmd quarkus:dev "
+        },
         "group": "none",
         "presentation": {
           "reveal": "always",
@@ -15,7 +18,30 @@
           "showReuseMessage": false,
           "clear": true
         },
-        "problemMatcher": []
+        "isBackground": true,
+        "problemMatcher": [
+          {
+            "owner": "quarkus",
+            "fileLocation": [
+              "relative",
+              "${workspaceFolder}/src/main/resources/templates"
+            ],
+            "pattern": [
+              {
+                "regexp": "\\[(\\d+)\\]\\s(.*):(\\d+):(\\d+)\\s\\-\\s{(.*)}:\\s(.*)$",
+                "file": 2,
+                "line": 3,
+                "column": 4,
+                "message": 6
+              }
+            ],
+            "background": {
+              "activeOnStart": true,
+              "beginsPattern": "^.*Scanning for projects...",
+              "endsPattern": "(^.*Quarkus .* started in .*\\.)|(^.* ERROR .* Failed to start)"
+            }
+          }
+        ]
       }
     ]
   }

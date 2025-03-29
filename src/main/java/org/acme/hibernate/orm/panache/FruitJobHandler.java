@@ -8,8 +8,7 @@ import io.smallrye.mutiny.Uni;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 
-import com.badu.entities.jobs.JobInstance;
-import com.badu.entities.jobs.JobInstance.JobStatus;
+import com.badu.dto.FruitJobRequest;
 import com.badu.services.jobs.JobManagerService;
 
 @ApplicationScoped
@@ -24,21 +23,12 @@ public class FruitJobHandler {
   private static final Logger LOG = Logger.getLogger(FruitJobHandler.class);
 
   @Incoming("TEST_MSG")
-  public final Uni<Void> processChatUsersUpdateRequest(final Fruit fruit) {
-    LOG.error("Created new frout: " + fruit.name);
+  public final Uni<Void> processChatUsersUpdateRequest(final FruitJobRequest jobRequest) {
+    LOG.info("Handle new fruit CREATED: " + jobRequest.fruit.name);
 
-    JobInstance job = new JobInstance();
-    job.name = "Fruit Processing";
-    job.status = JobStatus.PENDING;
-
-    return Panache.withTransaction(() -> job.<JobInstance>persist())
-        .onItem().ifNotNull().call(newJob -> {
-          return jobManagerService.submitJob(() -> {
-            return fruitProcessingJob.execute(fruit, newJob.id);
-          });
-        })
-        .onItem().ifNotNull().transformToUni(neeJob -> {
-          return Uni.createFrom().voidItem();
-        });
+    return jobManagerService.submitJob(() -> {
+      LOG.info("Execute fruit job processing ...");
+      return fruitProcessingJob.execute(jobRequest.fruit, jobRequest.jobId);
+    });
   }
 }

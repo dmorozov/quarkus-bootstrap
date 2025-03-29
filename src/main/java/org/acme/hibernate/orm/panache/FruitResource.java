@@ -20,9 +20,9 @@ import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.ext.ExceptionMapper;
 import jakarta.ws.rs.ext.Provider;
 
-import org.eclipse.microprofile.reactive.messaging.Channel;
 import org.jboss.logging.Logger;
 
+import com.badu.services.jobs.JobService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
@@ -30,7 +30,6 @@ import io.quarkus.hibernate.reactive.panache.Panache;
 import io.quarkus.panache.common.Sort;
 import io.smallrye.mutiny.CompositeException;
 import io.smallrye.mutiny.Uni;
-import io.smallrye.reactive.messaging.MutinyEmitter;
 
 @Path("fruits")
 @ApplicationScoped
@@ -40,8 +39,8 @@ public class FruitResource {
 
   private static final Logger LOGGER = Logger.getLogger(FruitResource.class.getName());
 
-  @Channel("TEST_MSG")
-  private MutinyEmitter<Fruit> msgEmitter;
+  @Inject
+  private JobService jobService;
 
   @GET
   public Uni<List<Fruit>> get() {
@@ -61,7 +60,7 @@ public class FruitResource {
     }
 
     return Panache.withTransaction(fruit::persist)
-        .onItem().ifNotNull().call(newFruit -> msgEmitter.send((Fruit) newFruit))
+        .onItem().ifNotNull().call(newFruit -> jobService.createJob((Fruit) newFruit))
         .replaceWith(Response.ok(fruit).status(CREATED)::build);
   }
 

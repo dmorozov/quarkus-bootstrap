@@ -2,6 +2,8 @@ package org.acme.hibernate.orm.panache;
 
 import java.util.function.Supplier;
 
+import org.jboss.logging.Logger;
+
 import com.badu.repositories.JobRepository;
 
 import io.smallrye.mutiny.Uni;
@@ -10,6 +12,8 @@ import jakarta.inject.Inject;
 
 @ApplicationScoped
 public class FruitProcessingJob {
+
+  private static final Logger LOG = Logger.getLogger(FruitProcessingJob.class);
 
   @Inject
   private JobRepository jobRepository;
@@ -35,6 +39,7 @@ public class FruitProcessingJob {
 
     return Uni.createFrom().voidItem()
         .call(x -> {
+          LOG.info("Execute action: " + actionName);
           return action.get()
               .onItem().call(v -> {
                 return jobRepository.recordJobSuccess(jobId, actionName, progress);
