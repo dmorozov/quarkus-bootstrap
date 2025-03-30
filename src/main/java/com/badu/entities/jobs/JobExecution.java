@@ -33,7 +33,7 @@ public class JobExecution {
     return this.getClass().getSimpleName() + "<" + id + ">";
   }
 
-  @Column(name = "JOB_NAME", length = 40, unique = true)
+  @Column(name = "JOB_NAME", length = 40, nullable = false)
   public String name;
 
   @Enumerated(EnumType.STRING)
