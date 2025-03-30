@@ -3,21 +3,35 @@ package org.acme.hibernate.orm.panache;
 import jakarta.persistence.Cacheable;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-
-import io.quarkus.hibernate.reactive.panache.PanacheEntity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.SequenceGenerator;
+import jakarta.persistence.Table;
 
 @Entity
 @Cacheable
-public class Fruit extends PanacheEntity {
+@Table(name = "FRUITS")
+public class Fruit {
 
-    @Column(length = 40, unique = true)
-    public String name;
+  @Id
+  @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "FRUITS_SEQ")
+  @SequenceGenerator(name = "FRUITS_SEQ", sequenceName = "FRUITS_SEQ")
+  public Long id;
 
-    public Fruit() {
-    }
+  @Override
+  public String toString() {
+    return this.getClass().getSimpleName() + "<" + id + ">";
+  }
 
-    public Fruit(String name) {
-        this.name = name;
-    }
+  @Column(length = 40, unique = true)
+  public String name;
+
+  public Fruit() {
+  }
+
+  public Fruit(String name) {
+    this.name = name;
+  }
 
 }

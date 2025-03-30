@@ -1,16 +1,24 @@
 package com.badu.entities.jobs;
 
-import io.quarkus.hibernate.reactive.panache.PanacheEntity;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.SequenceGenerator;
 import jakarta.persistence.Table;
 
 @Entity
-@Table(name = "JOB_LOGS")
-public class JobLog extends PanacheEntity {
+@Table(name = "JOB_EXECUTION_LOGS")
+public class JobExecutionLog {
+
+  @Id
+  @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "JOB_EXECUTION_LOGS_SEQ")
+  @SequenceGenerator(name = "JOB_EXECUTION_LOGS_SEQ", sequenceName = "JOB_EXECUTION_LOGS_SEQ")
+  public Long id;
 
   @Column(name = "JOB_ID", nullable = false)
   public Long jobId;
@@ -28,6 +36,6 @@ public class JobLog extends PanacheEntity {
   public String errorDetails;
 
   @ManyToOne(fetch = FetchType.LAZY)
-  @JoinColumn(name = "JOB_ID", nullable = false, insertable = false, updatable = false)
-  public JobInstance job;
+  @JoinColumn(name = "JOB_ID", insertable = false, updatable = false)
+  public JobExecution job;
 }

@@ -4,8 +4,9 @@ import java.util.function.Supplier;
 
 import org.jboss.logging.Logger;
 
-import com.badu.repositories.JobRepository;
+import com.badu.repositories.JobExecutionRepository;
 
+import io.quarkus.hibernate.reactive.panache.Panache;
 import io.smallrye.mutiny.Uni;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
@@ -16,7 +17,7 @@ public class FruitProcessingJob {
   private static final Logger LOG = Logger.getLogger(FruitProcessingJob.class);
 
   @Inject
-  private JobRepository jobRepository;
+  private JobExecutionRepository jobRepository;
 
   @Inject
   private FruitRepository fruitRepository;
@@ -42,17 +43,17 @@ public class FruitProcessingJob {
           LOG.info("Execute action: " + actionName);
           return action.get()
               .onItem().call(v -> {
-                return jobRepository.recordJobSuccess(jobId, actionName, progress);
+                return Panache.withTransaction(() -> jobRepository.recordJobSuccess(jobId, actionName, progress));
               })
               .onFailure().call(failure -> {
-                return jobRepository.recordJobFailure(jobId, actionName, failure);
+                return Panache.withTransaction(() -> jobRepository.recordJobFailure(jobId, actionName, failure));
               });
         });
   }
 
   private Uni<Void> testAction(final String fruitName) {
-    return fruitRepository.createFruit(fruitName)
-        .onItem().ifNotNull().transformToUni(fruit -> Uni.createFrom().voidItem());
+    return Panache.withTransaction(() -> fruitRepository.createFruit(fruitName)
+        .onItem().ifNotNull().transformToUni(fruit -> Uni.createFrom().voidItem()));
   }
 
 }

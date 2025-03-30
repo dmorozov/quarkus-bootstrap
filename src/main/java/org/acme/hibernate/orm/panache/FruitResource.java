@@ -22,12 +22,9 @@ import jakarta.ws.rs.ext.Provider;
 
 import org.jboss.logging.Logger;
 
-import com.badu.services.jobs.JobService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
-import io.quarkus.hibernate.reactive.panache.Panache;
-import io.quarkus.panache.common.Sort;
 import io.smallrye.mutiny.CompositeException;
 import io.smallrye.mutiny.Uni;
 
@@ -40,17 +37,17 @@ public class FruitResource {
   private static final Logger LOGGER = Logger.getLogger(FruitResource.class.getName());
 
   @Inject
-  private JobService jobService;
+  private FruitService fruitService;
 
   @GET
   public Uni<List<Fruit>> get() {
-    return Fruit.listAll(Sort.by("name"));
+    return fruitService.listAll();
   }
 
   @GET
   @Path("{id}")
   public Uni<Fruit> getSingle(Long id) {
-    return Fruit.findById(id);
+    return fruitService.findById(id);
   }
 
   @POST
@@ -59,8 +56,7 @@ public class FruitResource {
       throw new WebApplicationException("Id was invalidly set on request.", 422);
     }
 
-    return Panache.withTransaction(fruit::persist)
-        .onItem().ifNotNull().call(newFruit -> jobService.createJob((Fruit) newFruit))
+    return fruitService.createFruit(fruit)
         .replaceWith(Response.ok(fruit).status(CREATED)::build);
   }
 
@@ -71,9 +67,7 @@ public class FruitResource {
       throw new WebApplicationException("Fruit name was not set on request.", 422);
     }
 
-    return Panache
-        .withTransaction(() -> Fruit.<Fruit>findById(id)
-            .onItem().ifNotNull().invoke(entity -> entity.name = fruit.name))
+    return fruitService.updateFruit(id, fruit)
         .onItem().ifNotNull().transform(entity -> Response.ok(entity).build())
         .onItem().ifNull().continueWith(Response.ok().status(NOT_FOUND)::build);
   }
@@ -81,7 +75,7 @@ public class FruitResource {
   @DELETE
   @Path("{id}")
   public Uni<Response> delete(Long id) {
-    return Panache.withTransaction(() -> Fruit.deleteById(id))
+    return fruitService.deleteById(id)
         .map(deleted -> deleted
             ? Response.ok().status(NO_CONTENT).build()
             : Response.ok().status(NOT_FOUND).build());

@@ -4,9 +4,9 @@ import org.acme.hibernate.orm.panache.Fruit;
 import org.eclipse.microprofile.reactive.messaging.Channel;
 
 import com.badu.dto.FruitJobRequest;
-import com.badu.entities.jobs.JobInstance;
-import com.badu.entities.jobs.JobInstance.JobStatus;
-import com.badu.repositories.JobRepository;
+import com.badu.entities.jobs.JobExecution;
+import com.badu.entities.jobs.JobExecution.JobStatus;
+import com.badu.repositories.JobExecutionRepository;
 
 import io.quarkus.hibernate.reactive.panache.Panache;
 import io.smallrye.mutiny.Uni;
@@ -21,9 +21,9 @@ public class JobService {
   private MutinyEmitter<FruitJobRequest> msgEmitter;
 
   @Inject
-  private JobRepository jobRepository;
+  private JobExecutionRepository jobRepository;
 
-  public final Uni<JobInstance> createJob(final Fruit fruit) {
+  public final Uni<JobExecution> createJob(final Fruit fruit) {
     // TODO: implement new job
     // 1. Create and persist JobInstance entity
     // 2. Send job request to channel
@@ -31,7 +31,7 @@ public class JobService {
     // scalable and tight-coupled. How to offload to the job request itself?
 
     return Panache.withTransaction(() -> {
-      JobInstance job = new JobInstance();
+      JobExecution job = new JobExecution();
       job.name = "Fruit Processing";
       job.status = JobStatus.PENDING;
 
