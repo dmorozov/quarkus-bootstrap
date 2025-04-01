@@ -27,7 +27,7 @@ public class JobExecutionRepository implements PanacheRepository<JobExecution> {
     LOG.info("Record job success: " + action + ", progress: " + progress);
 
     JobExecutionLog log = new JobExecutionLog();
-    log.jobId = jobId;
+    log.jobExecutionId = jobId;
     log.action = action;
     log.progress = progress;
 
@@ -51,7 +51,7 @@ public class JobExecutionRepository implements PanacheRepository<JobExecution> {
     LOG.info("Record job failure: " + action + ", error: " + e.getMessage());
 
     JobExecutionLog log = new JobExecutionLog();
-    log.jobId = jobId;
+    log.jobExecutionId = jobId;
     log.action = action;
     if (e != null) {
       StringWriter sw = new StringWriter();

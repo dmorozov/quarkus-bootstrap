@@ -1,5 +1,7 @@
 package com.badu.entities.jobs;
 
+import com.badu.utils.EntityConstants;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -20,22 +22,22 @@ public class JobExecutionLog {
   @SequenceGenerator(name = "JOB_EXECUTION_LOGS_SEQ", sequenceName = "JOB_EXECUTION_LOGS_SEQ")
   public Long id;
 
-  @Column(name = "JOB_ID", nullable = false)
-  public Long jobId;
+  @Column(name = "JOB_EXECUTION_ID", nullable = false)
+  public Long jobExecutionId;
 
-  @Column(name = "ACTION_NAME", length = 256, nullable = false)
+  @Column(name = "ACTION_NAME", length = EntityConstants.COLUMN_LONG_NAME, nullable = false)
   public String action;
 
   @Column(name = "PROGRESS", nullable = false)
   public int progress;
 
-  @Column(name = "PROCESSING_DETAILS", length = 2048)
+  @Column(name = "PROCESSING_DETAILS", length = EntityConstants.COLUMN_LONG_DESC)
   public String processingDetails;
 
-  @Column(name = "ERROR_DETAILS", length = 2048)
+  @Column(name = "ERROR_DETAILS", length = EntityConstants.COLUMN_LONG_DESC)
   public String errorDetails;
 
   @ManyToOne(fetch = FetchType.LAZY)
-  @JoinColumn(name = "JOB_ID", insertable = false, updatable = false)
-  public JobExecution job;
+  @JoinColumn(name = "JOB_EXECUTION_ID", insertable = false, updatable = false)
+  public JobExecution jobExecution;
 }
