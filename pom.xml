@@ -23,6 +23,7 @@
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
     <assertj.version>3.22.0</assertj.version>
+    <lombok.version>1.18.34</lombok.version>
   </properties>
 
   <dependencyManagement>
@@ -70,6 +71,13 @@
       <artifactId>quarkus-rest-jackson</artifactId>
     </dependency>
 
+    <dependency>
+      <groupId>org.projectlombok</groupId>
+      <artifactId>lombok</artifactId>
+      <version>${lombok.version}</version>
+      <scope>compile</scope>
+    </dependency>
+
     <!-- Testing: -->
     <dependency>
       <groupId>io.quarkus</groupId>
@@ -99,6 +107,13 @@
           <target>${java.version}</target>
           <!-- the parameters=true option is critical so that RESTEasy works fine -->
           <parameters>true</parameters>
+          <annotationProcessorPaths>
+            <path>
+              <groupId>org.projectlombok</groupId>
+              <artifactId>lombok</artifactId>
+              <version>${lombok.version}</version>
+            </path>
+          </annotationProcessorPaths>
         </configuration>
       </plugin>
       <plugin>

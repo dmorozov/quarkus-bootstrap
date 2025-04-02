@@ -1,43 +1,49 @@
 package com.badu.entities.jobs;
 
+import java.util.UUID;
+
+import org.hibernate.annotations.UuidGenerator;
+
+import com.badu.entities.CreatableEntity;
 import com.badu.utils.EntityConstants;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
-import jakarta.persistence.SequenceGenerator;
 import jakarta.persistence.Table;
+import lombok.Getter;
+import lombok.Setter;
 
+@Getter
+@Setter
 @Entity
 @Table(name = "JOB_EXECUTION_LOGS")
-public class JobExecutionLog {
+public class JobExecutionLog extends CreatableEntity {
 
   @Id
-  @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "JOB_EXECUTION_LOGS_SEQ")
-  @SequenceGenerator(name = "JOB_EXECUTION_LOGS_SEQ", sequenceName = "JOB_EXECUTION_LOGS_SEQ")
-  public Long id;
+  @Column(name = "JOB_EXECUTION_LOG_ID")
+  @UuidGenerator
+  private UUID id;
 
   @Column(name = "JOB_EXECUTION_ID", nullable = false)
-  public Long jobExecutionId;
+  private UUID jobExecutionId;
 
   @Column(name = "ACTION_NAME", length = EntityConstants.COLUMN_LONG_NAME, nullable = false)
-  public String action;
+  private String action;
 
   @Column(name = "PROGRESS", nullable = false)
-  public int progress;
+  private int progress;
 
   @Column(name = "PROCESSING_DETAILS", length = EntityConstants.COLUMN_LONG_DESC)
-  public String processingDetails;
+  private String processingDetails;
 
   @Column(name = "ERROR_DETAILS", length = EntityConstants.COLUMN_LONG_DESC)
-  public String errorDetails;
+  private String errorDetails;
 
   @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "JOB_EXECUTION_ID", insertable = false, updatable = false)
-  public JobExecution jobExecution;
+  private JobExecution jobExecution;
 }

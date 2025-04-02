@@ -2,7 +2,9 @@ package org.acme.hibernate.orm.panache;
 
 import java.util.List;
 
+import com.badu.dto.FruitJobRequest;
 import com.badu.services.jobs.JobService;
+import com.badu.utils.TransactionUtils;
 
 import io.quarkus.hibernate.reactive.panache.Panache;
 import io.quarkus.panache.common.Sort;
@@ -21,8 +23,17 @@ public class FruitService {
 
   public Uni<Fruit> createFruit(final Fruit fruit) {
     return Panache.withTransaction(() -> {
-      return fruitRepository.persist(fruit);
-    }).onItem().ifNotNull().call(newFruit -> jobService.createJob(fruit));
+      return fruitRepository.persist(fruit)
+          .call(newFruit -> submitFruitProcessingJob(newFruit));
+    }).onItem().invoke(TransactionUtils::executePostTransactionCallbacks);
+  }
+
+  private Uni<Void> submitFruitProcessingJob(final Fruit fruit) {
+    // jobService.createJob(fruit)
+    FruitJobRequest.builder()
+        .fruit(fruit)
+        .build();
+    return Uni.createFrom().voidItem();
   }
 
   public Uni<Fruit> findById(Long id) {

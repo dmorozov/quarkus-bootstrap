@@ -1,12 +1,15 @@
 package com.badu.services.jobs;
 
+import java.util.function.Supplier;
+
 import org.acme.hibernate.orm.panache.Fruit;
 import org.eclipse.microprofile.reactive.messaging.Channel;
 import org.jboss.logging.Logger;
 
 import com.badu.dto.FruitJobRequest;
+import com.badu.dto.IJobRequest;
 import com.badu.entities.jobs.JobExecution;
-import com.badu.entities.jobs.JobExecution.JobStatus;
+import com.badu.entities.jobs.JobState;
 import com.badu.repositories.JobExecutionRepository;
 import com.badu.utils.TransactionUtils;
 
@@ -27,17 +30,19 @@ public class JobService {
 
   private static final Logger LOG = Logger.getLogger(JobService.class);
 
-  public final Uni<JobExecution> createJob(final Fruit fruit) {
+  public final Uni<JobExecution> createJob(final IJobRequest jobRequest, Supplier<Uni<Void>> onCommitCallback) {
     // TODO: implement new job
     // 1. Create and persist JobInstance entity
     // 2. Send job request to channel
     // Note: we do not want to hardcode/define all channels in one service. Not
     // scalable and tight-coupled. How to offload to the job request itself?
 
+    // FruitJobRequest
+
     return Panache.withTransaction(() -> {
       JobExecution job = new JobExecution();
       job.name = "Fruit Processing";
-      job.status = JobStatus.PENDING;
+      job.status = JobState.PENDING;
 
       return jobRepository.persist(job)
           .chain(jobExecution -> {
@@ -51,6 +56,6 @@ public class JobService {
 
             return Uni.createFrom().item(jobExecution);
           });
-    }).onItem().invoke(TransactionUtils::executePostTransactionCallbacks);
+    });
   }
 }

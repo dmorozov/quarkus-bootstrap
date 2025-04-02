@@ -1,13 +1,19 @@
 package com.badu.dto;
 
+import java.util.UUID;
+
 import org.acme.hibernate.orm.panache.Fruit;
 
-public class FruitJobRequest implements IJobRequest {
-  public final Long jobId;
-  public final Fruit fruit;
+import lombok.Builder;
 
-  public FruitJobRequest(final Long jobId, final Fruit fruit) {
-    this.jobId = jobId;
-    this.fruit = fruit;
+@Builder(toBuilder = true)
+public class FruitJobRequest implements IJobRequest {
+  public final UUID jobId;
+  public final Fruit fruit;
+  public final UUID currentUserId;
+
+  @Override
+  public IJobRequest withJobId(final UUID jobId) {
+    return this.toBuilder().jobId(jobId).build();
   }
 }

@@ -2,20 +2,22 @@ package com.badu.repositories;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.util.UUID;
 
 import org.jboss.logging.Logger;
 
 import com.badu.entities.jobs.JobExecution;
 import com.badu.entities.jobs.JobExecutionLog;
-import com.badu.entities.jobs.JobExecution.JobStatus;
+import com.badu.entities.jobs.JobState;
 
 import io.quarkus.hibernate.reactive.panache.PanacheRepository;
+import io.quarkus.hibernate.reactive.panache.PanacheRepositoryBase;
 import io.smallrye.mutiny.Uni;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 
 @ApplicationScoped
-public class JobExecutionRepository implements PanacheRepository<JobExecution> {
+public class JobExecutionRepository implements PanacheRepositoryBase<JobExecution, UUID> {
 
   private static final Logger LOG = Logger.getLogger(JobExecutionRepository.class);
 
@@ -37,7 +39,7 @@ public class JobExecutionRepository implements PanacheRepository<JobExecution> {
         return findById(jobId)
             .onItem().ifNotNull().transformToUni(job -> {
               LOG.info("Job is SUCCEEDED");
-              job.status = JobStatus.SUCCEEDED;
+              job.status = JobState.SUCCEEDED;
               return persist(job);
             });
       });
@@ -66,7 +68,7 @@ public class JobExecutionRepository implements PanacheRepository<JobExecution> {
           return findById(jobId)
               .onItem().ifNotNull().transformToUni(job -> {
                 LOG.info("Job is FAILED");
-                job.status = JobStatus.FAILED;
+                job.status = JobState.FAILED;
                 return persist(job);
               });
         });
