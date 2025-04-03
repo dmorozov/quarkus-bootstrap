@@ -1,14 +1,19 @@
 package org.acme.hibernate.orm.panache;
 
 import java.util.List;
+import java.util.UUID;
+
+import org.eclipse.microprofile.reactive.messaging.Channel;
 
 import com.badu.dto.FruitJobRequest;
+import com.badu.dto.IJobRequest;
 import com.badu.services.jobs.JobService;
 import com.badu.utils.TransactionUtils;
 
 import io.quarkus.hibernate.reactive.panache.Panache;
 import io.quarkus.panache.common.Sort;
 import io.smallrye.mutiny.Uni;
+import io.smallrye.reactive.messaging.MutinyEmitter;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 
@@ -21,6 +26,9 @@ public class FruitService {
   @Inject
   private JobService jobService;
 
+  @Channel(FruitJobRequest.JOB_TYPE)
+  private MutinyEmitter<FruitJobRequest> msgEmitter;
+
   public Uni<Fruit> createFruit(final Fruit fruit) {
     return Panache.withTransaction(() -> {
       return fruitRepository.persist(fruit)
@@ -29,11 +37,15 @@ public class FruitService {
   }
 
   private Uni<Void> submitFruitProcessingJob(final Fruit fruit) {
-    // jobService.createJob(fruit)
-    FruitJobRequest.builder()
+
+    FruitJobRequest jobRequest = FruitJobRequest.builder()
         .fruit(fruit)
+        .triggeredBy(UUID.randomUUID())
         .build();
-    return Uni.createFrom().voidItem();
+
+    return jobService.scheduleOneTimeJob(jobRequest, (jobId) -> {
+      return msgEmitter.send((FruitJobRequest) jobRequest.withJobId(jobId));
+    });
   }
 
   public Uni<Fruit> findById(Long id) {

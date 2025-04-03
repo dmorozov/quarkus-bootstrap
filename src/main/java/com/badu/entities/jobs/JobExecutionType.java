@@ -1,5 +1,5 @@
 package com.badu.entities.jobs;
 
-public enum JobType {
+public enum JobExecutionType {
   ONETIME, ONDEMAND, SCHEDULED
 }

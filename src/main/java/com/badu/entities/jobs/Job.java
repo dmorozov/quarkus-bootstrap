@@ -41,12 +41,15 @@ public class Job extends UpdatableEntity {
   @Column(name = "JOB_NAME", length = EntityConstants.COLUMN_NAME, nullable = false)
   private String name;
 
+  @Column(name = "JOB_TYPE", length = EntityConstants.COLUMN_NAME, nullable = false)
+  private String type;
+
   @Column(name = "JOB_DESCRIPTION", length = EntityConstants.COLUMN_LONG_DESC)
   private String description;
 
   @Enumerated(EnumType.STRING)
-  @Column(name = "JOB_TYPE", nullable = false)
-  private JobType type;
+  @Column(name = "JOB_EXECUTION_TYPE", nullable = false)
+  private JobExecutionType executionType;
 
   @Column(name = "JOB_PARAMS", length = EntityConstants.COLUMN_LONG_DESC, nullable = false)
   private String params;
