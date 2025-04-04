@@ -18,6 +18,7 @@ import jakarta.persistence.FetchType;
 import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
+import jakarta.persistence.Transient;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -74,4 +75,8 @@ public class Job extends UpdatableEntity {
   @OneToMany(fetch = FetchType.LAZY, mappedBy = "job", cascade = CascadeType.ALL)
   private List<JobExecution> executions;
 
+  @Transient
+  public boolean isProcessed() {
+    return state == JobState.COMPLETED || state == JobState.FAILED;
+  }
 }

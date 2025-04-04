@@ -40,9 +40,12 @@ public class JobExecution extends CreatableEntity {
   @Column(name = "JOB_NAME", length = EntityConstants.COLUMN_NAME, nullable = false)
   private String name;
 
+  @Column(name = "JOB_PARAMS", length = EntityConstants.COLUMN_LONG_DESC, nullable = false)
+  private String params;
+
   @Enumerated(EnumType.STRING)
   @Column(name = "JOB_STATE", nullable = false)
-  private JobState state;
+  private JobExecutionState state;
 
   @Column(name = "TRIGGERED_BY", nullable = false)
   private UUID triggeredBy;
@@ -66,7 +69,7 @@ public class JobExecution extends CreatableEntity {
   @JoinColumn(name = "JOB_ID", insertable = false, updatable = false)
   private Job job;
 
-  @OneToMany(fetch = FetchType.LAZY, mappedBy = "job", cascade = CascadeType.ALL)
+  @OneToMany(fetch = FetchType.LAZY, mappedBy = "jobExecution", cascade = CascadeType.ALL)
   private List<JobExecutionLog> logs;
 
   @Override

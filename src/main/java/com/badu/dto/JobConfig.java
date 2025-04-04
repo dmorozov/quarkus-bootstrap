@@ -9,7 +9,7 @@ import lombok.Setter;
 @Builder
 public class JobConfig {
 
-  public static final int DEFAULT_DELAY = 1;
+  public static final int DEFAULT_DELAY = 3; // in seconds
   public static final int DEFAULT_MAX_RETRY = 3;
 
   @Builder.Default

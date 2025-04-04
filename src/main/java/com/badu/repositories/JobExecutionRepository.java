@@ -8,9 +8,8 @@ import org.jboss.logging.Logger;
 
 import com.badu.entities.jobs.JobExecution;
 import com.badu.entities.jobs.JobExecutionLog;
-import com.badu.entities.jobs.JobState;
+import com.badu.entities.jobs.JobExecutionState;
 
-import io.quarkus.hibernate.reactive.panache.PanacheRepository;
 import io.quarkus.hibernate.reactive.panache.PanacheRepositoryBase;
 import io.smallrye.mutiny.Uni;
 import jakarta.enterprise.context.ApplicationScoped;
@@ -24,22 +23,22 @@ public class JobExecutionRepository implements PanacheRepositoryBase<JobExecutio
   @Inject
   private JobExecutionLogRepository logRepository;
 
-  public Uni<JobExecutionLog> recordJobSuccess(final Long jobId, final String action, final int progress) {
+  public Uni<JobExecutionLog> recordJobSuccess(final UUID jobExecutionId, final String action, final int progress) {
 
     LOG.info("Record job success: " + action + ", progress: " + progress);
 
     JobExecutionLog log = new JobExecutionLog();
-    log.jobExecutionId = jobId;
-    log.action = action;
-    log.progress = progress;
+    log.setJobExecutionId(jobExecutionId);
+    log.setAction(action);
+    log.setProgress(progress);
 
     Uni<JobExecutionLog> rez = logRepository.persist(log);
     if (progress >= 100) {
       rez = rez.onItem().call(newLog -> {
-        return findById(jobId)
+        return findById(jobExecutionId)
             .onItem().ifNotNull().transformToUni(job -> {
-              LOG.info("Job is SUCCEEDED");
-              job.status = JobState.SUCCEEDED;
+              LOG.info("Job is COMPLETED");
+              job.setState(JobExecutionState.COMPLETED);
               return persist(job);
             });
       });
@@ -48,29 +47,34 @@ public class JobExecutionRepository implements PanacheRepositoryBase<JobExecutio
     return rez;
   }
 
-  public Uni<JobExecutionLog> recordJobFailure(final Long jobId, final String action, final Throwable e) {
+  public Uni<JobExecutionLog> recordJobFailure(final UUID jobExecutionId, final String action, final Throwable e) {
 
     LOG.info("Record job failure: " + action + ", error: " + e.getMessage());
 
     JobExecutionLog log = new JobExecutionLog();
-    log.jobExecutionId = jobId;
-    log.action = action;
+    log.setJobExecutionId(jobExecutionId);
+    log.setAction(action);
     if (e != null) {
       StringWriter sw = new StringWriter();
       e.printStackTrace(new PrintWriter(sw));
       String errorDetails = sw.toString();
-      log.errorDetails = errorDetails.length() > 2048
+      log.setErrorDetails(errorDetails.length() > 2048
           ? errorDetails.substring(0, 2048 - 1)
-          : errorDetails;
+          : errorDetails);
     }
     return logRepository.persist(log)
         .onItem().call(logItem -> {
-          return findById(jobId)
+          return findById(jobExecutionId)
               .onItem().ifNotNull().transformToUni(job -> {
                 LOG.info("Job is FAILED");
-                job.status = JobState.FAILED;
+                job.setState(JobExecutionState.FAILED);
                 return persist(job);
               });
         });
+  }
+
+  public Uni<JobExecution> findMostRecentByJobId(UUID id) {
+    // TODO Auto-generated method stub
+    throw new UnsupportedOperationException("Unimplemented method 'findByJobId'");
   }
 }
