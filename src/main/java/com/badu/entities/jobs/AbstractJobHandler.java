@@ -36,6 +36,8 @@ public abstract class AbstractJobHandler<T extends IJobRequest> {
 
   protected final Class<T> paramsType;
 
+  protected abstract Uni<Void> processJob(final JobExecution jobExecution, final T jobRequest);
+
   @SuppressWarnings("unchecked")
   protected AbstractJobHandler() {
     // Dynamically resolve generic type which defines the type of job parameters
@@ -51,7 +53,26 @@ public abstract class AbstractJobHandler<T extends IJobRequest> {
         .getActualTypeArguments()[0];
   }
 
-  protected abstract Uni<Void> processJob(final JobExecution jobExecution, final T jobRequest);
+  /**
+   * Another way to lock and process job
+   * <code>
+   public Uni<JobRecord> findAndLockJob() {
+        return jobRepository.withTransaction(tx -> {
+            String query = "FROM JobRecord WHERE processed = false ORDER BY createdAt ASC";
+            return jobRepository.getSession()
+                .createQuery(query, JobRecord.class)
+                .setLockMode(LockModeType.PESSIMISTIC_WRITE)
+                .setMaxResults(1)
+                .getSingleResultOrNull()
+                .onItem().ifNotNull().invoke(job -> {
+                    job.setProcessed(true);
+                    job.setProcessedAt(Instant.now());
+                    // No need to explicitly persist as it's a managed entity
+                });
+        });
+    }
+   * </code>
+   */
 
   protected Uni<Void> lockAndProcessJob(final UUID jobId, final T jobRequest) {
 
@@ -95,10 +116,13 @@ public abstract class AbstractJobHandler<T extends IJobRequest> {
   private Uni<JobExecution> createJobExecution(final Job lockedJob, final T params) throws JsonProcessingException {
     JobExecution jobExecution = new JobExecution();
     jobExecution.setJobId(lockedJob.getId());
+    jobExecution.setName(lockedJob.getName());
     jobExecution.setStartTime(ZonedDateTime.now());
     jobExecution.setState(JobExecutionState.QUEUED);
     jobExecution.setParams(objectMapper.writeValueAsString(params));
     jobExecution.setTriggeredBy(params.getTriggeredBy());
+    jobExecution.setRetryCounter(0); // ??? where I can get it? from history?
+    jobExecution.setProgress(0);
     return jobExecutionRepository.persistAndFlush(jobExecution);
   }
 
