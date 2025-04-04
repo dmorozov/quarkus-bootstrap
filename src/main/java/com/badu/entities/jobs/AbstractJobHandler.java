@@ -15,6 +15,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import io.quarkus.hibernate.reactive.panache.Panache;
 import io.smallrye.mutiny.Uni;
+import io.smallrye.mutiny.tuples.Tuple2;
 import jakarta.inject.Inject;
 import jakarta.persistence.LockModeType;
 
@@ -74,17 +75,35 @@ public abstract class AbstractJobHandler<T extends IJobRequest> {
    * </code>
    */
 
+  protected static boolean isJobProcessedOrInProgress(final Job job, final JobExecution jobExecution) {
+    boolean isProcessed = job.isProcessed();
+    if (!isProcessed && jobExecution != null) {
+
+      ZonedDateTime now = ZonedDateTime.now();
+      ZonedDateTime expectedRetryTime = jobExecution.getStartTime().plusSeconds(job.getRetryDelaySeconds());
+
+      // it is either completed or still in progress
+      if (jobExecution.getState() == JobExecutionState.COMPLETED || expectedRetryTime.isAfter(now)) {
+        return true;
+      }
+    }
+
+    return isProcessed;
+  }
+
   protected Uni<Void> lockAndProcessJob(final UUID jobId, final T jobRequest) {
 
     return Panache.withTransaction(() -> {
       // Get and LOCK job to prevent the concurrent processing
       return jobRespository.findById(jobId, LockModeType.PESSIMISTIC_WRITE)
           .onItem().ifNotNull().transformToUni(lockedJob -> {
-            return isJobProcessedOrInProgress(lockedJob)
-                .onItem().transformToUni(isProcessedOrInProgress -> {
+            return jobExecutionRepository.findMostRecentByJobId(lockedJob.getId())
+                .onItem().transformToUni(jobExecution -> {
+                  boolean isProcessedOrInProgress = isJobProcessedOrInProgress(lockedJob, jobExecution);
+
                   if (isProcessedOrInProgress) {
-                    LOG.info("Skipping job processing. Job with id " + jobId + " is already handled.");
-                    return Uni.createFrom().voidItem();
+                    LOG.info("Skipping job processing. Job with id " + jobId + " is either completed or in progress.");
+                    return Uni.createFrom().nullItem();
                   }
 
                   try {
@@ -94,12 +113,10 @@ public abstract class AbstractJobHandler<T extends IJobRequest> {
                       ObjectMerger.merge(params, jobRequest);
                     }
 
-                    return createJobExecution(lockedJob, params)
-                        .onItem().transformToUni(jobExecution -> {
-                          return jobManagerService.submitJob(() -> {
-                            LOG.info("Execute fruit job processing ...");
-                            return processJob(jobExecution, params);
-                          });
+                    int retryCounter = jobExecution != null ? jobExecution.getRetryCounter() + 1 : 1;
+                    return createJobExecution(lockedJob, params, retryCounter)
+                        .onItem().ifNotNull().transform(execution -> {
+                          return Tuple2.of(execution, params);
                         });
                   } catch (JacksonException e) {
                     return Uni.createFrom().failure(e);
@@ -108,12 +125,20 @@ public abstract class AbstractJobHandler<T extends IJobRequest> {
           })
           .onItem().ifNull().switchTo(() -> {
             LOG.info("Skipping job processing. Job with id " + jobId + " not found");
-            return Uni.createFrom().voidItem();
+            return Uni.createFrom().nullItem();
           });
-    });
+    })
+        .onItem().ifNotNull().transformToUni(newExecution -> {
+          return jobManagerService.submitJob(() -> {
+            LOG.info("Execute '" + newExecution.getItem1().getName() + "' job processing ...");
+            return processJob(newExecution.getItem1(), newExecution.getItem2());
+          });
+        })
+        .onItem().ifNull().switchTo(() -> Uni.createFrom().voidItem());
   }
 
-  private Uni<JobExecution> createJobExecution(final Job lockedJob, final T params) throws JsonProcessingException {
+  private Uni<JobExecution> createJobExecution(final Job lockedJob, final T params, final int retryCounter)
+      throws JsonProcessingException {
     JobExecution jobExecution = new JobExecution();
     jobExecution.setJobId(lockedJob.getId());
     jobExecution.setName(lockedJob.getName());
@@ -121,27 +146,8 @@ public abstract class AbstractJobHandler<T extends IJobRequest> {
     jobExecution.setState(JobExecutionState.QUEUED);
     jobExecution.setParams(objectMapper.writeValueAsString(params));
     jobExecution.setTriggeredBy(params.getTriggeredBy());
-    jobExecution.setRetryCounter(0); // ??? where I can get it? from history?
+    jobExecution.setRetryCounter(retryCounter);
     jobExecution.setProgress(0);
     return jobExecutionRepository.persistAndFlush(jobExecution);
-  }
-
-  private Uni<Boolean> isJobProcessedOrInProgress(final Job lockedJob) {
-    if (lockedJob.isProcessed()) {
-      return Uni.createFrom().item(true);
-    }
-
-    return isJobExecutionInProgress(lockedJob);
-  }
-
-  private Uni<Boolean> isJobExecutionInProgress(final Job lockedJob) {
-    return jobExecutionRepository.findMostRecentByJobId(lockedJob.getId())
-        .onItem().ifNotNull().transformToUni(jobExecution -> {
-          return Uni.createFrom().item(
-              jobExecution.getStartTime().plusSeconds(lockedJob.getRetryDelaySeconds()).isAfter(ZonedDateTime.now()));
-        })
-        .onItem().ifNull().switchTo(() -> {
-          return Uni.createFrom().item(false);
-        });
   }
 }

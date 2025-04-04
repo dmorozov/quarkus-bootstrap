@@ -77,6 +77,6 @@ public class Job extends UpdatableEntity {
 
   @Transient
   public boolean isProcessed() {
-    return state == JobState.COMPLETED || state == JobState.FAILED;
+    return state == JobState.COMPLETED || state == JobState.FAILED || state == JobState.CANCELED;
   }
 }

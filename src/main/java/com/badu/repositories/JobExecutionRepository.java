@@ -9,8 +9,10 @@ import org.jboss.logging.Logger;
 import com.badu.entities.jobs.JobExecution;
 import com.badu.entities.jobs.JobExecutionLog;
 import com.badu.entities.jobs.JobExecutionState;
+import com.badu.entities.jobs.JobState;
 
 import io.quarkus.hibernate.reactive.panache.PanacheRepositoryBase;
+import io.quarkus.panache.common.Sort;
 import io.smallrye.mutiny.Uni;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
@@ -35,11 +37,13 @@ public class JobExecutionRepository implements PanacheRepositoryBase<JobExecutio
     Uni<JobExecutionLog> rez = logRepository.persist(log);
     if (progress >= 100) {
       rez = rez.onItem().call(newLog -> {
-        return findById(jobExecutionId)
-            .onItem().ifNotNull().transformToUni(job -> {
+        return find("from JobExecution p left join fetch p.job where p.id = :jobExecutionId", jobExecutionId)
+            .singleResult()
+            .onItem().ifNotNull().transformToUni(jobExecution -> {
               LOG.info("Job is COMPLETED");
-              job.setState(JobExecutionState.COMPLETED);
-              return persist(job);
+              jobExecution.setState(JobExecutionState.COMPLETED);
+              jobExecution.getJob().setState(JobState.COMPLETED);
+              return persist(jobExecution);
             });
       });
     }
@@ -64,17 +68,20 @@ public class JobExecutionRepository implements PanacheRepositoryBase<JobExecutio
     }
     return logRepository.persist(log)
         .onItem().call(logItem -> {
-          return findById(jobExecutionId)
-              .onItem().ifNotNull().transformToUni(job -> {
+          return find("from JobExecution p left join fetch p.job where p.id = :jobExecutionId", jobExecutionId)
+              .singleResult()
+              .onItem().ifNotNull().transformToUni(jobExecution -> {
                 LOG.info("Job is FAILED");
-                job.setState(JobExecutionState.FAILED);
-                return persist(job);
+                jobExecution.setState(JobExecutionState.FAILED);
+                jobExecution.getJob().setState(JobState.FAILED);
+                return persist(jobExecution);
               });
         });
   }
 
-  public Uni<JobExecution> findMostRecentByJobId(UUID id) {
-    // TODO Auto-generated method stub
-    throw new UnsupportedOperationException("Unimplemented method 'findByJobId'");
+  public Uni<JobExecution> findMostRecentByJobId(UUID jobId) {
+    return find("from JobExecution p where p.jobId = :jobId",
+        Sort.by("p.startTime", Sort.Direction.Descending), jobId)
+        .singleResult();
   }
 }

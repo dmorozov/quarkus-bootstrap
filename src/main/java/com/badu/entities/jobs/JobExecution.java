@@ -20,6 +20,7 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
+import jakarta.persistence.Transient;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -75,5 +76,10 @@ public class JobExecution extends CreatableEntity {
   @Override
   public String toString() {
     return this.getClass().getSimpleName() + "<" + id + ">";
+  }
+
+  @Transient
+  public boolean isProcessed() {
+    return state == JobExecutionState.COMPLETED || state == JobExecutionState.FAILED;
   }
 }
