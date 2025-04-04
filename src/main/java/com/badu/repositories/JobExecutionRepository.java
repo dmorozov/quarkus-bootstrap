@@ -73,7 +73,9 @@ public class JobExecutionRepository implements PanacheRepositoryBase<JobExecutio
               .onItem().ifNotNull().transformToUni(jobExecution -> {
                 LOG.info("Job is FAILED");
                 jobExecution.setState(JobExecutionState.FAILED);
-                jobExecution.getJob().setState(JobState.FAILED);
+                if (jobExecution.getRetryCounter() >= jobExecution.getJob().getMaxRetryCounter()) {
+                  jobExecution.getJob().setState(JobState.FAILED);
+                }
                 return persist(jobExecution);
               });
         });
