@@ -34,10 +34,11 @@ public abstract class AbstractJobHandler<T extends IJobRequest> {
   @Inject
   private ObjectMapper objectMapper;
 
-  protected final Class<T> type;
+  protected final Class<T> paramsType;
 
   @SuppressWarnings("unchecked")
   protected AbstractJobHandler() {
+    // Dynamically resolve generic type which defines the type of job parameters
     Class<?> currentClass = getClass();
     while (currentClass.getSuperclass() != AbstractJobHandler.class) {
       currentClass = currentClass.getSuperclass();
@@ -46,7 +47,7 @@ public abstract class AbstractJobHandler<T extends IJobRequest> {
             "Could not determine type arguments for " + getClass().getName());
       }
     }
-    this.type = (Class<T>) ((ParameterizedType) currentClass.getGenericSuperclass())
+    this.paramsType = (Class<T>) ((ParameterizedType) currentClass.getGenericSuperclass())
         .getActualTypeArguments()[0];
   }
 
@@ -67,7 +68,7 @@ public abstract class AbstractJobHandler<T extends IJobRequest> {
 
                   try {
                     // Parse job params
-                    final T params = objectMapper.readValue(lockedJob.getParams(), type);
+                    final T params = objectMapper.readValue(lockedJob.getParams(), paramsType);
                     if (jobRequest != null) {
                       ObjectMerger.merge(params, jobRequest);
                     }
