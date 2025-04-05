@@ -2,6 +2,7 @@ package com.badu.repositories;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.time.ZonedDateTime;
 import java.util.UUID;
 
 import org.jboss.logging.Logger;
@@ -42,6 +43,8 @@ public class JobExecutionRepository implements PanacheRepositoryBase<JobExecutio
             .onItem().ifNotNull().transformToUni(jobExecution -> {
               LOG.info("Job is COMPLETED");
               jobExecution.setState(JobExecutionState.COMPLETED);
+              jobExecution.setEndTime(ZonedDateTime.now());
+              jobExecution.setProgress(progress);
               jobExecution.getJob().setState(JobState.COMPLETED);
               return persist(jobExecution);
             });
@@ -73,6 +76,7 @@ public class JobExecutionRepository implements PanacheRepositoryBase<JobExecutio
               .onItem().ifNotNull().transformToUni(jobExecution -> {
                 LOG.info("Job is FAILED");
                 jobExecution.setState(JobExecutionState.FAILED);
+                jobExecution.setEndTime(ZonedDateTime.now());
                 if (jobExecution.getRetryCounter() >= jobExecution.getJob().getMaxRetryCounter()) {
                   jobExecution.getJob().setState(JobState.FAILED);
                 }
