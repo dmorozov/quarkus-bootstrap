@@ -7,7 +7,6 @@ import com.badu.dto.IJobRequest;
 import com.badu.dto.JobConfig;
 import com.badu.entities.DataStatus;
 import com.badu.entities.jobs.Job;
-import com.badu.entities.jobs.JobExecutionState;
 import com.badu.entities.jobs.JobExecutionType;
 import com.badu.entities.jobs.JobState;
 import com.badu.repositories.JobRespository;
@@ -43,7 +42,7 @@ public class JobService {
 
     return scheduleOneTimeJob(jobRequest,
         JobConfig.builder().build(),
-        (jobId) -> Uni.createFrom().voidItem());
+        onCommitCallback);
   }
 
   public final Uni<Void> scheduleOneTimeJob(final IJobRequest jobRequest,

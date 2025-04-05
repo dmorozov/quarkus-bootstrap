@@ -1,12 +1,8 @@
 package com.badu.entities.jobs;
 
 import java.util.UUID;
-
 import org.hibernate.annotations.UuidGenerator;
-
-import com.badu.entities.CreatableEntity;
 import com.badu.utils.EntityConstants;
-
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -21,7 +17,7 @@ import lombok.Setter;
 @Setter
 @Entity
 @Table(name = "JOB_EXECUTION_LOGS")
-public class JobExecutionLog extends CreatableEntity {
+public class JobExecutionLog {
 
   @Id
   @Column(name = "JOB_EXECUTION_LOG_ID")

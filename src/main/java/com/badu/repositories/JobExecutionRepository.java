@@ -37,7 +37,7 @@ public class JobExecutionRepository implements PanacheRepositoryBase<JobExecutio
     Uni<JobExecutionLog> rez = logRepository.persist(log);
     if (progress >= 100) {
       rez = rez.onItem().call(newLog -> {
-        return find("from JobExecution p left join fetch p.job where p.id = :jobExecutionId", jobExecutionId)
+        return find("from JobExecution p left join fetch p.job where p.id = ?1", jobExecutionId)
             .singleResult()
             .onItem().ifNotNull().transformToUni(jobExecution -> {
               LOG.info("Job is COMPLETED");
@@ -68,7 +68,7 @@ public class JobExecutionRepository implements PanacheRepositoryBase<JobExecutio
     }
     return logRepository.persist(log)
         .onItem().call(logItem -> {
-          return find("from JobExecution p left join fetch p.job where p.id = :jobExecutionId", jobExecutionId)
+          return find("from JobExecution p left join fetch p.job where p.id = ?1", jobExecutionId)
               .singleResult()
               .onItem().ifNotNull().transformToUni(jobExecution -> {
                 LOG.info("Job is FAILED");
@@ -82,8 +82,8 @@ public class JobExecutionRepository implements PanacheRepositoryBase<JobExecutio
   }
 
   public Uni<JobExecution> findMostRecentByJobId(UUID jobId) {
-    return find("from JobExecution p where p.jobId = :jobId",
+    return find("from JobExecution p where p.jobId = ?1",
         Sort.by("p.startTime", Sort.Direction.Descending), jobId)
-        .singleResult();
+        .firstResult();
   }
 }

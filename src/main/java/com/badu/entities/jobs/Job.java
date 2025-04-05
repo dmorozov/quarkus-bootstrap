@@ -1,5 +1,6 @@
 package com.badu.entities.jobs;
 
+import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.UUID;
 
@@ -78,5 +79,16 @@ public class Job extends UpdatableEntity {
   @Transient
   public boolean isProcessed() {
     return state == JobState.COMPLETED || state == JobState.FAILED || state == JobState.CANCELED;
+  }
+
+  public JobExecution toExecution() {
+    JobExecution jobExecution = new JobExecution();
+    jobExecution.setJobId(getId());
+    jobExecution.setName(getName());
+    jobExecution.setStartTime(ZonedDateTime.now());
+    jobExecution.setState(JobExecutionState.QUEUED);
+    jobExecution.setProgress(0);
+
+    return jobExecution;
   }
 }

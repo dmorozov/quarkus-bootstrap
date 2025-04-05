@@ -6,7 +6,6 @@ import java.util.UUID;
 import org.eclipse.microprofile.reactive.messaging.Channel;
 
 import com.badu.dto.FruitJobRequest;
-import com.badu.dto.IJobRequest;
 import com.badu.services.jobs.JobService;
 import com.badu.utils.TransactionUtils;
 
@@ -40,6 +39,7 @@ public class FruitService {
 
     FruitJobRequest jobRequest = FruitJobRequest.builder()
         .fruit(fruit)
+        .jobName("Fruit Processing")
         .triggeredBy(UUID.randomUUID())
         .build();
 

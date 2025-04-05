@@ -8,6 +8,7 @@ import com.badu.dto.IJobRequest;
 import com.badu.repositories.JobExecutionRepository;
 import com.badu.repositories.JobRespository;
 import com.badu.services.jobs.JobManagerService;
+import com.badu.utils.EntityUtils;
 import com.badu.utils.ObjectMerger;
 import com.fasterxml.jackson.core.JacksonException;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -24,16 +25,16 @@ public abstract class AbstractJobHandler<T extends IJobRequest> {
   private static final Logger LOG = Logger.getLogger(AbstractJobHandler.class);
 
   @Inject
-  private JobManagerService jobManagerService;
+  JobManagerService jobManagerService;
 
   @Inject
-  private JobRespository jobRespository;
+  JobRespository jobRespository;
 
   @Inject
-  private JobExecutionRepository jobExecutionRepository;
+  JobExecutionRepository jobExecutionRepository;
 
   @Inject
-  private ObjectMapper objectMapper;
+  ObjectMapper objectMapper;
 
   protected final Class<T> paramsType;
 
@@ -139,15 +140,13 @@ public abstract class AbstractJobHandler<T extends IJobRequest> {
 
   private Uni<JobExecution> createJobExecution(final Job lockedJob, final T params, final int retryCounter)
       throws JsonProcessingException {
-    JobExecution jobExecution = new JobExecution();
-    jobExecution.setJobId(lockedJob.getId());
-    jobExecution.setName(lockedJob.getName());
-    jobExecution.setStartTime(ZonedDateTime.now());
-    jobExecution.setState(JobExecutionState.QUEUED);
+
+    JobExecution jobExecution = lockedJob.toExecution();
     jobExecution.setParams(objectMapper.writeValueAsString(params));
-    jobExecution.setTriggeredBy(params.getTriggeredBy());
     jobExecution.setRetryCounter(retryCounter);
-    jobExecution.setProgress(0);
-    return jobExecutionRepository.persistAndFlush(jobExecution);
+
+    EntityUtils.updateUserContext(params.getTriggeredBy(), jobExecution);
+
+    return jobExecutionRepository.persist(jobExecution);
   }
 }

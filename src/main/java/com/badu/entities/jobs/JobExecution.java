@@ -48,9 +48,6 @@ public class JobExecution extends CreatableEntity {
   @Column(name = "JOB_STATE", nullable = false)
   private JobExecutionState state;
 
-  @Column(name = "TRIGGERED_BY", nullable = false)
-  private UUID triggeredBy;
-
   @Column(name = "RETRY_COUNTER", nullable = false)
   private int retryCounter;
 
