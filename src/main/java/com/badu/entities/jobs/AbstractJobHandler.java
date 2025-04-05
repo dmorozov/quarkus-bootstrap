@@ -55,27 +55,6 @@ public abstract class AbstractJobHandler<T extends IJobRequest> {
         .getActualTypeArguments()[0];
   }
 
-  /**
-   * Another way to lock and process job
-   * <code>
-   public Uni<JobRecord> findAndLockJob() {
-        return jobRepository.withTransaction(tx -> {
-            String query = "FROM JobRecord WHERE processed = false ORDER BY createdAt ASC";
-            return jobRepository.getSession()
-                .createQuery(query, JobRecord.class)
-                .setLockMode(LockModeType.PESSIMISTIC_WRITE)
-                .setMaxResults(1)
-                .getSingleResultOrNull()
-                .onItem().ifNotNull().invoke(job -> {
-                    job.setProcessed(true);
-                    job.setProcessedAt(Instant.now());
-                    // No need to explicitly persist as it's a managed entity
-                });
-        });
-    }
-   * </code>
-   */
-
   protected static boolean isJobProcessedOrInProgress(final Job job, final JobExecution jobExecution) {
     boolean isProcessed = job.isProcessed();
     if (!isProcessed && jobExecution != null) {
