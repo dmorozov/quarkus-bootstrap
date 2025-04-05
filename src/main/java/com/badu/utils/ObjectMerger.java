@@ -3,8 +3,13 @@ package com.badu.utils;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.UUID;
+
+import org.jboss.logging.Logger;
 
 public final class ObjectMerger {
+
+  private static final Logger LOG = Logger.getLogger(ObjectMerger.class);
 
   private ObjectMerger() {
     // Utility Class
@@ -39,8 +44,7 @@ public final class ObjectMerger {
           setter.invoke(target, sourceValue);
         }
       } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
-        // Handle exceptions as needed (e.g., log or throw)
-        System.err.println("Error merging field " + fieldName + ": " + e.getMessage());
+        LOG.warn("Error merging field " + fieldName + ": " + e.getMessage());
       }
     }
     return target;
@@ -55,6 +59,7 @@ public final class ObjectMerger {
         type == Float.class ||
         type == Double.class ||
         type == Character.class ||
-        type == Short.class;
+        type == Short.class ||
+        type == UUID.class;
   }
 }

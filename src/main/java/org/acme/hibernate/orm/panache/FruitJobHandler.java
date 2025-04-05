@@ -22,7 +22,7 @@ public class FruitJobHandler extends AbstractJobHandler<FruitJobRequest> {
 
   @Incoming(FruitJobRequest.JOB_TYPE)
   public final Uni<Void> processChatUsersUpdateRequest(final FruitJobRequest jobRequest) {
-    LOG.info("Handle new fruit CREATED: " + jobRequest.fruit.name);
+    LOG.info("Handle new fruit CREATED: " + jobRequest.getFruit().name);
     return lockAndProcessJob(jobRequest.getJobId(), jobRequest);
   }
 
@@ -38,6 +38,6 @@ public class FruitJobHandler extends AbstractJobHandler<FruitJobRequest> {
   }
 
   protected Uni<Void> processJob(final JobExecution jobExecution, final FruitJobRequest jobRequest) {
-    return fruitProcessingJob.execute(jobRequest.fruit, jobExecution.getId());
+    return fruitProcessingJob.execute(jobRequest.getFruit(), jobExecution.getId());
   }
 }

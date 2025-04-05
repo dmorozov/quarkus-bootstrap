@@ -51,6 +51,11 @@ public class JobExecutionRepository implements PanacheRepositoryBase<JobExecutio
       });
     }
 
+    rez.onItem().call(r -> {
+      LOG.debug("    => Job progress: " + progress);
+      return Uni.createFrom().voidItem();
+    });
+
     return rez;
   }
 

@@ -10,6 +10,7 @@ import com.badu.services.jobs.JobService;
 import com.badu.utils.TransactionUtils;
 
 import io.quarkus.hibernate.reactive.panache.Panache;
+import io.quarkus.logging.Log;
 import io.quarkus.panache.common.Sort;
 import io.smallrye.mutiny.Uni;
 import io.smallrye.reactive.messaging.MutinyEmitter;
@@ -32,11 +33,13 @@ public class FruitService {
     return Panache.withTransaction(() -> {
       return fruitRepository.persist(fruit)
           .call(newFruit -> submitFruitProcessingJob(newFruit));
-    }).onItem().invoke(TransactionUtils::executePostTransactionCallbacks);
+    })
+        .onItem().invoke(TransactionUtils::executePostTransactionCallbacks)
+        .onItem().invoke(x -> Log.debug("!!! Job is submitted !!!"));
   }
 
   private Uni<Void> submitFruitProcessingJob(final Fruit fruit) {
-
+    Log.debug("!!! Submitting job ... !!!");
     FruitJobRequest jobRequest = FruitJobRequest.builder()
         .fruit(fruit)
         .jobName("Fruit Processing")

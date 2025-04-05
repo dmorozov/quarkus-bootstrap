@@ -1,5 +1,6 @@
 package org.acme.hibernate.orm.panache;
 
+import java.time.Duration;
 import java.util.UUID;
 import java.util.function.Supplier;
 
@@ -40,6 +41,8 @@ public class FruitProcessingJob {
       Supplier<Uni<Void>> action) {
 
     return Uni.createFrom().voidItem()
+        // Delay is for testing purpose only!
+        // .onItem().delayIt().by(Duration.ofMillis(1000))
         .call(x -> {
           LOG.info("Execute action: " + actionName);
           return action.get()
