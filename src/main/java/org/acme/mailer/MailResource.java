@@ -1,5 +1,7 @@
 package org.acme.mailer;
 
+import java.util.List;
+
 import io.quarkus.mailer.Mail;
 import io.quarkus.mailer.Mailer;
 import io.quarkus.mailer.reactive.ReactiveMailer;
@@ -21,6 +23,20 @@ public class MailResource {
   public void sendEmail() {
     mailer.send(Mail.withText("your-destination-email@quarkus.io", "Ahoy from Quarkus",
         "A simple email sent from a Quarkus application."));
+  }
+
+  @GET
+  @Path("/test")
+  @Blocking
+  public String sendTestEmail() {
+    Mail m = new Mail();
+    m.setFrom("admin@hallofjustice.net");
+    m.setTo(List.of("superheroes@quarkus.io"));
+    m.setSubject("WARNING: Super Villain Alert");
+    m.setText("Lex Luthor has been seen in Gotham City!");
+    mailer.send(m);
+
+    return "Sent";
   }
 
   @Inject

@@ -82,23 +82,23 @@
       <scope>compile</scope>
     </dependency>
     <dependency>
-        <groupId>io.quarkus</groupId>
-        <artifactId>quarkus-hibernate-validator</artifactId>
+      <groupId>io.quarkus</groupId>
+      <artifactId>quarkus-hibernate-validator</artifactId>
     </dependency>
 
     <!-- Emails -->
     <dependency>
-        <groupId>io.quarkus</groupId>
-        <artifactId>quarkus-mailer</artifactId>
+      <groupId>io.quarkus</groupId>
+      <artifactId>quarkus-mailer</artifactId>
     </dependency>
     <dependency>
-        <groupId>io.quarkus</groupId>
-        <artifactId>quarkus-qute</artifactId>
+      <groupId>io.quarkus</groupId>
+      <artifactId>quarkus-qute</artifactId>
     </dependency>
     <dependency>
-        <groupId>io.quarkiverse.mailpit</groupId>
-        <artifactId>quarkus-mailpit</artifactId>
-        <version>1.6.2</version>
+      <groupId>io.quarkiverse.mailpit</groupId>
+      <artifactId>quarkus-mailpit</artifactId>
+      <version>1.6.2</version>
     </dependency>
 
     <!-- Testing: -->
