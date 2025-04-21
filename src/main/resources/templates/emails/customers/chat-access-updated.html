@@ -1,0 +1,10 @@
+{#include emails/baseEmail} 
+  {#title}My Title{/title} 
+  
+  <h2>Welcome on board {data.customerName}!</h2>
+	<p>
+		Your '{data.chatName}' chat access has been 
+    {#if data.isRevoked} revoked{#else} updated with {data.role} permissions{/if}. 
+    You can now use the chat feature in your account.
+	</p>
+{/include}
