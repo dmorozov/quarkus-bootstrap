@@ -71,8 +71,6 @@ public class PdfReceiptService {
 
       String base64String = Base64.getEncoder().encodeToString(imageBytes);
       return String.format(IMG_TAG, IMAGE_PREFIX, base64String);
-      // return "<img src=\"" + IMAGE_PREFIX + base64String + "\" />";
-
     } catch (IOException e) {
       LOG.error(e);
     }

@@ -6,11 +6,10 @@ import io.quarkus.mailer.MailTemplate;
 import io.quarkus.mailer.MailTemplate.MailTemplateInstance;
 import io.quarkus.qute.CheckedTemplate;
 
-public class EmailTemplates {
+public final class EmailTemplates {
 
   @CheckedTemplate(basePath = "emails/customers", defaultName = CheckedTemplate.HYPHENATED_ELEMENT_NAME)
   static class Customer {
-
     static native MailTemplate.MailTemplateInstance chatAccessUpdated(UpdateAccessEmailData data);
   }
 

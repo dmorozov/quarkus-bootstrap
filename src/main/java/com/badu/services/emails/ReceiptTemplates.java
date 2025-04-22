@@ -8,7 +8,6 @@ public final class ReceiptTemplates {
 
   @CheckedTemplate(basePath = "receipts/customers", defaultName = CheckedTemplate.HYPHENATED_ELEMENT_NAME)
   static class Customer {
-
     static native TemplateInstance chatAccessUpdated(UpdateAccessEmailData data);
   }
 
