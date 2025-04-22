@@ -2,11 +2,14 @@ package com.badu.services.emails;
 
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
-import java.io.File;
 import java.io.IOException;
 import java.util.Base64;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import javax.imageio.ImageIO;
+
+import org.jboss.logging.Logger;
 
 import com.badu.dto.emails.UpdateAccessEmailData;
 import com.openhtmltopdf.pdfboxout.PdfRendererBuilder;
@@ -18,6 +21,13 @@ import jakarta.enterprise.context.ApplicationScoped;
 @ApplicationScoped
 public class PdfReceiptService {
 
+  private static final Logger LOG = Logger.getLogger(PdfReceiptService.class);
+
+  private static final Pattern IMG_PATTERN = Pattern.compile("<img src=\"image:([^\"]+).* />");
+  private static final String IMAGE_PREFIX = "data:image/png;base64,";
+  private static final String IMAGE_BASE_PATH = "/images/";
+  private static final String EMPTY_STRING = "";
+
   public <T> Uni<byte[]> generatePdfReceipt(String receiptType, T data) {
     MailTemplateInstance template = resolveTemplate(receiptType, data);
     return Uni.createFrom().completionStage(template.templateInstance().renderAsync())
@@ -27,7 +37,8 @@ public class PdfReceiptService {
             PdfRendererBuilder builder = new PdfRendererBuilder();
             builder.useFastMode();
             String baseUri = PdfReceiptService.class.getResource("/").toExternalForm();
-            builder.withHtmlContent(receiptHtml, baseUri);
+            String htmlContent = processImageData(receiptHtml);
+            builder.withHtmlContent(htmlContent, baseUri);
             builder.toStream(baos);
             builder.run();
 
@@ -46,22 +57,36 @@ public class PdfReceiptService {
     };
   }
 
-  private void generateImageData() {
+  private String processImageData(String html) {
+    StringBuilder sb = new StringBuilder();
+
+    int lastIndex = 0;
+    Matcher matcher = IMG_PATTERN.matcher(html);
+    while (matcher.find()) {
+      sb.append(html.substring(lastIndex, matcher.start()));
+      sb.append(generateImageData(matcher.group(1)));
+      lastIndex = matcher.end();
+    }
+
+    sb.append(html.substring(lastIndex));
+    return sb.toString();
+  }
+
+  private String generateImageData(String imagePath) {
     try {
-      File imageFile = new File("path/to/your/image.png");
-      BufferedImage image = ImageIO.read(imageFile);
+      BufferedImage image = ImageIO.read(getClass().getResource(IMAGE_BASE_PATH + imagePath));
 
       ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
       ImageIO.write(image, "png", outputStream);
       byte[] imageBytes = outputStream.toByteArray();
 
       String base64String = Base64.getEncoder().encodeToString(imageBytes);
-      String dataUri = "data:image/png;base64," + base64String;
-
-      System.out.println(dataUri);
+      return "<img src=\"" + IMAGE_PREFIX + base64String + "\" />";
 
     } catch (IOException e) {
-      e.printStackTrace();
+      LOG.error(e);
     }
+
+    return EMPTY_STRING;
   }
 }
