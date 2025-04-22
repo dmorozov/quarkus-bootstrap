@@ -24,6 +24,7 @@
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
     <assertj.version>3.22.0</assertj.version>
     <lombok.version>1.18.34</lombok.version>
+    <openhtml.version>1.0.6</openhtml.version>
   </properties>
 
   <dependencyManagement>
@@ -99,6 +100,20 @@
       <groupId>io.quarkiverse.mailpit</groupId>
       <artifactId>quarkus-mailpit</artifactId>
       <version>1.6.2</version>
+    </dependency>
+    <!-- PDF receipts -->
+    <dependency>
+      <!-- ALWAYS required, usually included transitively. -->
+      <groupId>com.openhtmltopdf</groupId>
+      <artifactId>openhtmltopdf-core</artifactId>
+      <version>${openhtml.version}</version>
+    </dependency>
+
+    <dependency>
+      <!-- Required for PDF output. -->
+      <groupId>com.openhtmltopdf</groupId>
+      <artifactId>openhtmltopdf-pdfbox</artifactId>
+      <version>${openhtml.version}</version>
     </dependency>
 
     <!-- Testing: -->

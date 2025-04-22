@@ -1,10 +1,7 @@
 package org.acme.mailer;
 
-import java.io.Serializable;
-import java.util.Map;
-
 import com.badu.dto.emails.UpdateAccessEmailData;
-import com.badu.services.emails.CustomerEmailService;
+import com.badu.services.emails.EmailService;
 
 import io.smallrye.mutiny.Uni;
 
@@ -16,10 +13,10 @@ import jakarta.ws.rs.Path;
 public class MailResource {
 
   @Inject
-  CustomerEmailService customerEmailService;
+  EmailService customerEmailService;
 
   @GET
-  public Uni<Void> sendEmailUsingReactiveMailer() {
+  public Uni<Void> sendEmail() {
     UpdateAccessEmailData chatData = new UpdateAccessEmailData();
     chatData.chatName = "My Chat";
     chatData.isRevoked = false;
@@ -28,6 +25,21 @@ public class MailResource {
 
     return customerEmailService.sendEmail(
         "chatAccessUpdated",
+        "clement.escoffier@redhat.com",
+        chatData);
+  }
+
+  @GET
+  @Path("/attachment")
+  public Uni<Void> sendEmailWithAttachment() {
+    UpdateAccessEmailData chatData = new UpdateAccessEmailData();
+    chatData.chatName = "My Chat";
+    chatData.isRevoked = false;
+    chatData.role = "Admin";
+    chatData.customerName = "John Doe";
+
+    return customerEmailService.sendEmailWithAttachment(
+        "chatAccessUpdated", "chatAccessUpdated",
         "clement.escoffier@redhat.com",
         chatData);
   }
