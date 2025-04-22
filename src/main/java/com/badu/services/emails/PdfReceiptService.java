@@ -6,15 +6,10 @@ import java.io.IOException;
 import java.util.Base64;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
 import javax.imageio.ImageIO;
-
 import org.jboss.logging.Logger;
-
-import com.badu.dto.emails.UpdateAccessEmailData;
 import com.openhtmltopdf.pdfboxout.PdfRendererBuilder;
-
-import io.quarkus.mailer.MailTemplate.MailTemplateInstance;
+import io.quarkus.qute.TemplateInstance;
 import io.smallrye.mutiny.Uni;
 import jakarta.enterprise.context.ApplicationScoped;
 
@@ -27,10 +22,11 @@ public class PdfReceiptService {
   private static final String IMAGE_PREFIX = "data:image/png;base64,";
   private static final String IMAGE_BASE_PATH = "/images/";
   private static final String EMPTY_STRING = "";
+  private static final String IMG_TAG = "<img src=\"%s%s\" />";
 
   public <T> Uni<byte[]> generatePdfReceipt(String receiptType, T data) {
-    MailTemplateInstance template = resolveTemplate(receiptType, data);
-    return Uni.createFrom().completionStage(template.templateInstance().renderAsync())
+    TemplateInstance template = ReceiptTemplates.resolveTemplate(receiptType, data);
+    return Uni.createFrom().completionStage(template.renderAsync())
         .onItem().transformToUni(receiptHtml -> {
 
           try (ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
@@ -48,13 +44,6 @@ public class PdfReceiptService {
             return Uni.createFrom().failure(e);
           }
         });
-  }
-
-  private <T> MailTemplateInstance resolveTemplate(String receiptType, T data) {
-    return switch (receiptType) {
-      case "chatAccessUpdated" -> CustomerReceiptTemplates.chatAccessUpdated((UpdateAccessEmailData) data);
-      default -> throw new IllegalArgumentException("Unknown receipt type: " + receiptType);
-    };
   }
 
   private String processImageData(String html) {
@@ -81,7 +70,8 @@ public class PdfReceiptService {
       byte[] imageBytes = outputStream.toByteArray();
 
       String base64String = Base64.getEncoder().encodeToString(imageBytes);
-      return "<img src=\"" + IMAGE_PREFIX + base64String + "\" />";
+      return String.format(IMG_TAG, IMAGE_PREFIX, base64String);
+      // return "<img src=\"" + IMAGE_PREFIX + base64String + "\" />";
 
     } catch (IOException e) {
       LOG.error(e);
